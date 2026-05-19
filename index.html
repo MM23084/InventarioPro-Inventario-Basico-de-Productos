@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario Pro</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav>
+    <span class="nav-brand">📦 InventarioPro</span>
+    <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+    <button class="nav-btn" data-page="productos">Productos</button>
+    <button class="nav-btn" data-page="almacenamiento">Almacenamiento</button>
+    <button class="nav-btn" data-page="api">API / Geo</button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       PÁGINA: DASHBOARD
+  ═══════════════════════════════════════════ -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>Estadísticas del inventario procesadas por Web Worker</p>
+    </div>
+
+    <!-- Métricas -->
+    <div class="metrics-grid">
+      <div class="metric-card m-total">
+        <div class="metric-label">Total productos</div>
+        <div class="metric-value" id="m-total">0</div>
+      </div>
+      <div class="metric-card m-stock">
+        <div class="metric-label">Unidades en stock</div>
+        <div class="metric-value" id="m-stock">0</div>
+      </div>
+      <div class="metric-card m-valor">
+        <div class="metric-label">Valor total ($)</div>
+        <div class="metric-value" id="m-valor">$0</div>
+      </div>
+      <div class="metric-card m-bajo">
+        <div class="metric-label">Stock bajo</div>
+        <div class="metric-value" id="m-bajo">0</div>
+      </div>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="dash-grid">
+      <div class="card">
+        <div class="section-title">Productos por categoría</div>
+        <div class="bar-chart" id="cat-chart"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Stock por categoría</div>
+        <div class="prio-list" id="stock-chart"></div>
+      </div>
+    </div>
+
+    <!-- Alertas de stock bajo -->
+    <div class="card" style="margin-top:1.5rem;" id="alert-card">
+      <div class="section-title">⚠️ Alertas de stock bajo</div>
+      <div id="alert-list"><p style="color:var(--muted);font-size:.85rem;">Sin alertas.</p></div>
+    </div>
+
+    <!-- Web Worker -->
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="section-title">Web Worker — Análisis en segundo plano</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;">
+        El Worker calcula el valor total, promedios y stock crítico sin bloquear la interfaz.
+      </p>
+      <button class="btn-primary" id="btn-run-worker">Ejecutar análisis</button>
+      <div class="worker-log" id="worker-log">
+        <div class="log-line">Esperando ejecución...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PÁGINA: PRODUCTOS (CRUD)
+  ═══════════════════════════════════════════ -->
+  <div class="page" id="page-productos">
+    <div class="crud-header">
+      <div>
+        <h1>Gestión de Productos</h1>
+        <p style="color:var(--muted);font-size:.9rem;margin-top:.25rem;">
+          CRUD completo con validaciones y persistencia local
+        </p>
+      </div>
+      <button class="btn-primary" id="btn-nuevo-producto">+ Nuevo producto</button>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Buscar por nombre o código...">
+      <select id="filter-cat">
+        <option value="">Todas las categorías</option>
+        <option value="Electrónica">Electrónica</option>
+        <option value="Ropa">Ropa</option>
+        <option value="Alimentos">Alimentos</option>
+        <option value="Hogar">Hogar</option>
+        <option value="Deportes">Deportes</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <select id="filter-estado">
+        <option value="">Todos los estados</option>
+        <option value="disponible">Disponible</option>
+        <option value="agotado">Agotado</option>
+        <option value="bajo stock">Bajo stock</option>
+      </select>
+    </div>
+
+    <div class="card" style="overflow-x:auto;">
+      <table class="prod-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="prod-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PÁGINA: ALMACENAMIENTO
+  ═══════════════════════════════════════════ -->
+  <div class="page" id="page-almacenamiento">
+    <div class="page-header">
+      <h1>Almacenamiento</h1>
+      <p>LocalStorage (persistente) + SessionStorage (sesión actual)</p>
+    </div>
+    <div class="storage-grid">
+      <div class="storage-area">
+        <div class="storage-type">LocalStorage</div>
+        <h3>Inventario guardado</h3>
+        <p style="font-size:.82rem;color:var(--muted);margin-top:.25rem;">
+          Los productos se guardan aquí y persisten al cerrar el navegador.
+        </p>
+        <div class="storage-content" id="ls-content"></div>
+        <div class="storage-actions">
+          <button class="btn-sm" id="btn-view-ls">Actualizar</button>
+          <button class="btn-sm danger" id="btn-clear-ls">Limpiar todo</button>
+        </div>
+      </div>
+      <div class="storage-area">
+        <div class="storage-type">SessionStorage</div>
+        <h3>Datos de sesión</h3>
+        <p style="font-size:.82rem;color:var(--muted);margin-top:.25rem;">
+          Acciones realizadas durante esta sesión. Se borra al cerrar la pestaña.
+        </p>
+        <div class="storage-content" id="ss-content"></div>
+        <div class="storage-actions">
+          <button class="btn-sm" id="btn-view-ss">Actualizar</button>
+          <button class="btn-sm danger" id="btn-clear-ss">Limpiar sesión</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="section-title">Log de actividad (SessionStorage)</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+        Registro cronológico de todas las acciones de esta sesión.
+      </p>
+      <div class="storage-content" id="session-log" style="min-height:80px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PÁGINA: API / GEO
+  ═══════════════════════════════════════════ -->
+  <div class="page" id="page-api">
+    <div class="page-header">
+      <h1>API REST + Geolocalización</h1>
+      <p>Consulta datos externos con Fetch y obtén tu ubicación</p>
+    </div>
+
+    <!-- Geolocalización -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="section-title">Ubicación de la bodega</div>
+      <p style="font-size:.83rem;color:var(--muted);">
+        Registra la ubicación geográfica del almacén mediante GPS del dispositivo.
+      </p>
+      <div class="geo-info" id="geo-info" style="margin-top:.75rem;">
+        <div class="geo-chip">Estado: <span id="geo-status">sin obtener</span></div>
+      </div>
+      <button class="btn-primary" id="btn-get-location" style="margin-top:1rem;">
+        Obtener ubicación
+      </button>
+    </div>
+
+    <!-- Clima -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="section-title">Condiciones climáticas de la bodega</div>
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:1rem;">
+        Clima actual en la ubicación del almacén (Open-Meteo API).
+      </p>
+      <button class="btn-primary" id="btn-weather" disabled>Ver clima</button>
+      <div id="weather-result" style="margin-top:1rem;"></div>
+    </div>
+
+    <!-- Productos externos -->
+    <div class="card">
+      <div class="section-title">Catálogo externo — FakeStore API</div>
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:1rem;">
+        Consulta productos reales de una API pública. Puedes importarlos a tu inventario.
+      </p>
+      <button class="btn-primary" id="btn-fetch-productos">Cargar catálogo externo</button>
+      <div id="api-productos-result" style="margin-top:1rem;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: PRODUCTO
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">Nuevo producto</span>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Código *</label>
+          <input type="text" id="f-codigo" placeholder="Ej: PROD-001">
+          <div class="error-msg" id="err-codigo">Código obligatorio (mín. 3 caracteres)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoría *</label>
+          <select id="f-categoria">
+            <option value="">Seleccionar...</option>
+            <option value="Electrónica">Electrónica</option>
+            <option value="Ropa">Ropa</option>
+            <option value="Alimentos">Alimentos</option>
+            <option value="Hogar">Hogar</option>
+            <option value="Deportes">Deportes</option>
+            <option value="Otro">Otro</option>
+          </select>
+          <div class="error-msg" id="err-categoria">Selecciona una categoría</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre del producto *</label>
+        <input type="text" id="f-nombre" placeholder="Nombre descriptivo del producto">
+        <div class="error-msg" id="err-nombre">Nombre obligatorio (mín. 3 caracteres)</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <textarea id="f-descripcion" rows="2" placeholder="Descripción opcional..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Precio ($) *</label>
+          <input type="text" id="f-precio" placeholder="0.00">
+          <div class="error-msg" id="err-precio">Precio válido requerido (mayor a 0)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock (unidades) *</label>
+          <input type="text" id="f-stock" placeholder="0">
+          <div class="error-msg" id="err-stock">Stock válido requerido (≥ 0)</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Stock mínimo</label>
+          <input type="text" id="f-stock-min" placeholder="5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Proveedor</label>
+          <input type="text" id="f-proveedor" placeholder="Nombre del proveedor">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-ghost" id="btn-cancelar-modal">Cancelar</button>
+        <button class="btn-primary" id="btn-guardar-producto">Guardar producto</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toasts"></div>
+
+  <!-- Scripts en orden de dependencia -->
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/productos.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/worker-runner.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
