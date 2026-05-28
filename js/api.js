@@ -1,7 +1,6 @@
 /**
  * api.js
  * Módulo de API REST y Geolocalización.
- * Requerimiento 4: Fetch, geolocalización, JSON, Dashboard.
  */
 const API = (() => {
 
