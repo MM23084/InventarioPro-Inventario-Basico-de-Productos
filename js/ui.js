@@ -1,7 +1,3 @@
-/**
- * Navegación entre páginas, toasts y vistas de almacenamiento.
- */
-
 const UI = (() => {
 
   function showPage(id) {

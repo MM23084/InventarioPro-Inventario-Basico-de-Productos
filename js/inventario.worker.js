@@ -1,8 +1,3 @@
-/**
- * Web Worker: analiza el inventario en segundo plano.
- * Requerimiento 2: Web Worker para procesar datos.
- */
-
 self.onmessage = function (e) {
   const productos = e.data;
   const start     = Date.now();

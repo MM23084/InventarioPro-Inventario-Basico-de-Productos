@@ -1,9 +1,3 @@
-/**
- * storage.js
- * Módulo de almacenamiento: LocalStorage y SessionStorage.
- * Requerimiento 3: Almacenamiento Local.
- */
-
 const Storage = (() => {
 
   const LS_KEY   = 'inv_productos';

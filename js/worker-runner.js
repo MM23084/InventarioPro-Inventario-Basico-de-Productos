@@ -1,8 +1,3 @@
-/**
- * worker-runner.js
- * Lanza el Web Worker y muestra resultados en el log.
- */
-
 const WorkerRunner = (() => {
 
   function run() {
