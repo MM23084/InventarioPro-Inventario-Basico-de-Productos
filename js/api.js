@@ -1,7 +1,3 @@
-/**
- * api.js
- * Módulo de API REST y Geolocalización.
- */
 const API = (() => {
 
   let _coords = null;
