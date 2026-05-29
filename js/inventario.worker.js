@@ -23,7 +23,7 @@ self.onmessage = function (e) {
 
   productos.forEach(p => {
     stats.totalUnidades += p.stock;
-    stats.valorTotal += p.precio;
+    stats.valorTotal += p.precio * p.stock;
 
     if (p.stock === 0)              stats.agotados++;
     else if (p.stock <= p.stockMin) stats.bajoStock++;
